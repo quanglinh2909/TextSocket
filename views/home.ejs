@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="socket.io/socket.io.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.js"
+      integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div>
+      <div>
+        <input type="text" id="room" placeholder="room" />
+        <button id="join-room">Join room</button>
+        <button id="leave-room">Leave room</button>
+      </div>
+      <div>
+        <input type="text" id="message" placeholder="message" />
+        <button id="send-message">Send message</button>
+      </div>
+      <div id="container">
+        <div id="count-user"></div>
+        <div id="list-user"></div>
+        <div id="list-message"></div>
+      </div>
+    </div>
+    <script>
+      var socket = io();
+      socket.on("connect", function () {
+        var room = $("#room").val();
+        if (room) {
+          socket.emit("join-room", "room" + room);
+        }
+
+        console.log("connected");
+      });
+      socket.on("message", function (data) {
+        //append message
+        console.log("message", data);
+        $("#list-message").append(
+          "<div>" + data.room + ":" + data.message + "</div>"
+        );
+      });
+      socket.on("user-online", function (data) {
+        //append user online
+        console.log("user-online", data);
+        $("#list-message").append("<div>  user-online:" + data + "</div>");
+      });
+
+      socket.on("user-offline", function (data) {
+        //append user online
+        console.log("user-offline", data);
+        $("#list-message").append("<div> user-offline:" + data + "</div>");
+      });
+      socket.on("disconnect", function () {
+        console.log("disconnected");
+      });
+
+      $("#join-room").click(function () {
+        var room = $("#room").val();
+        socket.emit("join-room", "room" + room);
+      });
+
+      $("#leave-room").click(function () {
+        var room = $("#room").val();
+        socket.emit("leave-room", "room" + room);
+      });
+
+      $("#send-message").click(function () {
+        var message = $("#message").val();
+        socket.emit("message", {
+          message: message,
+          room: "room" + $("#room").val(),
+        });
+      });
+    </script>
+  </body>
+</html>
